@@ -81,6 +81,16 @@
             "php-http/discovery": true
         }
     },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        },
+        "files": [
+            "app/Helpers/Helper.php"
+        ]
+    },
     "minimum-stability": "stable",
     "prefer-stable": true
 }

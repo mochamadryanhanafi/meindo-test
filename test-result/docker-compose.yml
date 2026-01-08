@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # Service 1: PHP-FPM (Backend)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: meindo-app
+    container_name: meindo-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./src:/var/www
+    networks:
+      - meindo-net
+
+  # Service 2: Nginx (Web Server) -> Mapping ke Port 8081 Host
+  web:
+    image: nginx:alpine
+    container_name: meindo-web
+    restart: unless-stopped
+    ports:
+      - "8081:80"  # Menggunakan 8081 karena 8000 & 8080 sibuk
+    volumes:
+      - ./src:/var/www
+      - ./docker/nginx/app.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - meindo-net
+
+  # Service 3: MySQL (Database) -> Mapping ke Port 3307 Host
+  db:
+    image: mysql:8.0
+    container_name: meindo-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: meindo_db
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306" # Menggunakan 3307 untuk keamanan
+    volumes:
+      - dbdata:/var/lib/mysql
+      # Auto-import schema.sql saat pertama kali container dibuat
+      - ./src/database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    networks:
+      - meindo-net
+
+networks:
+  meindo-net:
+    driver: bridge
+
+volumes:
+  dbdata:
